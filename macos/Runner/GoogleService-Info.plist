@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>887317162810-vf0uspfvk4ie9oamvhvuko4kv4of1tif.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.887317162810-vf0uspfvk4ie9oamvhvuko4kv4of1tif</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAErH7_3abMqzk6OHdBd8dBadePXEgIolA</string>
+	<key>GCM_SENDER_ID</key>
+	<string>887317162810</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.gpsPinger</string>
+	<key>PROJECT_ID</key>
+	<string>pothole-pinger</string>
+	<key>STORAGE_BUCKET</key>
+	<string>pothole-pinger.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:887317162810:ios:1270583e6d298af17c7e03</string>
+	<key>DATABASE_URL</key>
+	<string>https://pothole-pinger-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>
