@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -21,8 +22,9 @@ class _MapViewState extends State<MapView> {
     zoom: 14.4746,
   );
 
-  final List<Marker> _markers = <Marker>[];
-
+  List<Marker> _markers = <Marker>[];
+  late Marker myLocation = const Marker(markerId:MarkerId("myLocation"),position: LatLng(0,0));
+  late Position prevPosition;
   @override
   void initState() {
     super.initState();
@@ -32,8 +34,10 @@ class _MapViewState extends State<MapView> {
 
   void initializeMarkers() async 
   {
-    DatabaseReference starCountRef = FirebaseDatabase.instance.ref('locations');
-    starCountRef.onValue.listen((DatabaseEvent event) {
+    DatabaseReference dbRef = FirebaseDatabase.instance.ref('locations');
+    dbRef.onValue.listen((DatabaseEvent event) {
+        _markers = [];
+        print("Value Changed");
         Map? data = event.snapshot.value as Map;
         Iterable keys = data.keys;
         for (var key in keys) {
@@ -57,27 +61,47 @@ class _MapViewState extends State<MapView> {
   }
 
   void accessLocation() {
-    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((Position position) {
-      setState(() async {
-        print("POSITION");
-        print(position);
-        final GoogleMapController controller = await _controller.future;
+    // Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((Position position) {
+    //   setState(() async {
+    //     final GoogleMapController controller = await _controller.future;
+    //     controller.animateCamera(CameraUpdate.newCameraPosition(
+    //       CameraPosition(
+    //         target: LatLng(position.latitude, position.longitude),
+    //         zoom: 14.4746,
+    //       ),
+    //     ));
+    //   });
+    // }).catchError((e) {
+    //   print(e);
+    // });
+    Geolocator.getPositionStream().listen((Position position) async {
+      print("GOT POSTION");
+      final GoogleMapController controller = await _controller.future;
+      setState(() {
         controller.animateCamera(CameraUpdate.newCameraPosition(
           CameraPosition(
             target: LatLng(position.latitude, position.longitude),
-            zoom: 14.4746,
+            zoom: 15.8,
           ),
         ));
-        });
-    }).catchError((e) {
-      print(e);
+        myLocation = Marker(
+          markerId: const MarkerId("myLocation"),
+          position: LatLng(position.latitude,position.longitude),
+          infoWindow: const InfoWindow(
+            title: "My Location",
+            snippet: "This is my location",
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueBlue,
+          ),
+        );
+      });
     });
   }
 
   void addPothole()
   {
     Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((Position position) {
-    // ignore: unnecessary_new
       Marker marker = Marker(
         markerId: MarkerId(position.latitude.toString()),
         position: LatLng(position.latitude,position.longitude),
@@ -107,6 +131,31 @@ class _MapViewState extends State<MapView> {
     });
   }
 
+  void moveToLocation() {
+    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high).then((Position position) async {
+      final GoogleMapController controller = await _controller.future;
+      setState(() {
+        controller.animateCamera(CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(position.latitude, position.longitude),
+            zoom: 15.8,
+          ),
+        ));
+        myLocation = Marker(
+          markerId: const MarkerId("myLocation"),
+          position: LatLng(position.latitude,position.longitude),
+          infoWindow: const InfoWindow(
+            title: "My Location",
+            snippet: "This is my location",
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueBlue,
+          ),
+        );
+      });
+    });
+  }
+
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
   
@@ -116,17 +165,27 @@ class _MapViewState extends State<MapView> {
       body: GoogleMap(
         mapType: MapType.hybrid,
         initialCameraPosition: currentLocation,
-        markers: Set<Marker>.of(_markers),
+        markers: {..._markers,myLocation},
         onMapCreated: (GoogleMapController controller) {
           _controller.complete(controller);
         },
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-      floatingActionButton: FloatingActionButton.extended(
-
-        onPressed: addPothole,
-        label: const Text('Add the Pothole'),
-        icon: const Icon(Icons.location_pin),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          FloatingActionButton.extended(
+            onPressed: addPothole,
+            label: const Text('Add the Pothole'),
+            icon: const Icon(Icons.location_pin),
+          ),
+          FloatingActionButton.small(
+            onPressed: moveToLocation,
+            child: const Icon(
+              Icons.gps_fixed
+            ),
+          )
+        ],
       ),
     );
   }
